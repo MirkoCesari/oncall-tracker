@@ -3,6 +3,7 @@
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Grafana](https://img.shields.io/badge/Grafana-11-F46800?logo=grafana&logoColor=white)](https://grafana.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 I always struggled to keep track of my OnCall and InCall shifts, so I decided to build this Docker container.
 
@@ -97,3 +98,7 @@ Set your Tailscale IP in **Settings → Grafana URL** (e.g. `http://100.x.x.x:30
 | ✅ Test | "Send test message" button |
 
 ---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
