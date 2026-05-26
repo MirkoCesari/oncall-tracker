@@ -1,0 +1,389 @@
+{
+  "annotations": { "list": [] },
+  "description": "Monitoraggio chiamate di reperibilità e costi",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "icon": "external link",
+      "title": "Apri Web App",
+      "tooltip": "Apri l'applicazione di inserimento",
+      "type": "link",
+      "url": "http://localhost:5000"
+    }
+  ],
+  "panels": [
+
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Chiamate questo mese",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "orange" },
+          "thresholds": { "mode": "absolute", "steps": [{"color": "orange", "value": null}] }
+        },
+        "overrides": []
+      },
+      "datasource": { "type": "postgres", "uid": "oncall-postgres" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres" },
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS value FROM chiamate WHERE DATE_TRUNC('month', data_ora) = DATE_TRUNC('month', NOW())",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Ore totali chiamate (mese)",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "blue" },
+          "unit": "h",
+          "decimals": 1,
+          "thresholds": { "mode": "absolute", "steps": [{"color": "blue", "value": null}] }
+        },
+        "overrides": []
+      },
+      "datasource": { "type": "postgres", "uid": "oncall-postgres" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres" },
+          "rawQuery": true,
+          "rawSql": "SELECT ROUND(COALESCE(SUM(durata_minuti),0)/60.0, 1) AS value FROM chiamate WHERE DATE_TRUNC('month', data_ora) = DATE_TRUNC('month', NOW())",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Costo chiamate (mese)",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "yellow" },
+          "unit": "currencyEUR",
+          "decimals": 2,
+          "thresholds": { "mode": "absolute", "steps": [{"color": "yellow", "value": null}] }
+        },
+        "overrides": []
+      },
+      "datasource": { "type": "postgres", "uid": "oncall-postgres" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres" },
+          "rawQuery": true,
+          "rawSql": "SELECT COALESCE(SUM(costo_calcolato),0) AS value FROM chiamate WHERE DATE_TRUNC('month', data_ora) = DATE_TRUNC('month', NOW())",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Costo reperibilità (mese)",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "green" },
+          "unit": "currencyEUR",
+          "decimals": 2,
+          "thresholds": { "mode": "absolute", "steps": [{"color": "green", "value": null}] }
+        },
+        "overrides": []
+      },
+      "datasource": { "type": "postgres", "uid": "oncall-postgres" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres" },
+          "rawQuery": true,
+          "rawSql": "SELECT COALESCE(SUM(costo_calcolato),0) AS value FROM reperibilita WHERE DATE_TRUNC('month', data_inizio) = DATE_TRUNC('month', NOW())",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "TOTALE MESE",
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "semi-dark-orange" },
+          "unit": "currencyEUR",
+          "decimals": 2,
+          "thresholds": { "mode": "absolute", "steps": [{"color": "semi-dark-orange", "value": null}] }
+        },
+        "overrides": []
+      },
+      "datasource": { "type": "postgres", "uid": "oncall-postgres" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres" },
+          "rawQuery": true,
+          "rawSql": "SELECT (\n  COALESCE((SELECT SUM(costo_calcolato) FROM chiamate WHERE DATE_TRUNC('month', data_ora) = DATE_TRUNC('month', NOW())), 0) +\n  COALESCE((SELECT SUM(costo_calcolato) FROM reperibilita WHERE DATE_TRUNC('month', data_inizio) = DATE_TRUNC('month', NOW())), 0)\n) AS value",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+
+    {
+      "id": 6,
+      "type": "barchart",
+      "title": "Chiamate per mese",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "options": {
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "fillOpacity": 80,
+        "gradientMode": "none",
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": -30
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "orange" },
+          "custom": { "fillOpacity": 70, "lineWidth": 1 },
+          "unit": "short",
+          "displayName": "N° Chiamate"
+        },
+        "overrides": []
+      },
+      "datasource": { "type": "postgres", "uid": "oncall-postgres" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres" },
+          "rawQuery": true,
+          "rawSql": "SELECT\n  TO_CHAR(DATE_TRUNC('month', data_ora), 'Mon YYYY') AS mese,\n  COUNT(*) AS \"Chiamate\"\nFROM chiamate\nGROUP BY DATE_TRUNC('month', data_ora)\nORDER BY DATE_TRUNC('month', data_ora)",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+
+    {
+      "id": 7,
+      "type": "barchart",
+      "title": "Costo mensile — Chiamate vs Reperibilità",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "options": {
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "fillOpacity": 80,
+        "gradientMode": "none",
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi" },
+        "xTickLabelRotation": -30,
+        "stacking": "normal"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyEUR",
+          "custom": { "fillOpacity": 70, "lineWidth": 1 }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Costo Chiamate" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Costo Reperibilità" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }]
+          }
+        ]
+      },
+      "datasource": { "type": "postgres", "uid": "oncall-postgres" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres" },
+          "rawQuery": true,
+          "rawSql": "SELECT\n  TO_CHAR(mese, 'Mon YYYY') AS mese_label,\n  COALESCE(costo_chiam, 0) AS \"Costo Chiamate\",\n  COALESCE(costo_rep, 0) AS \"Costo Reperibilità\"\nFROM (\n  SELECT generate_series(\n    DATE_TRUNC('month', NOW() - INTERVAL '11 months'),\n    DATE_TRUNC('month', NOW()),\n    '1 month'::interval\n  ) AS mese\n) m\nLEFT JOIN (\n  SELECT DATE_TRUNC('month', data_ora) AS m, SUM(costo_calcolato) AS costo_chiam\n  FROM chiamate GROUP BY 1\n) c ON c.m = m.mese\nLEFT JOIN (\n  SELECT DATE_TRUNC('month', data_inizio) AS m, SUM(costo_calcolato) AS costo_rep\n  FROM reperibilita GROUP BY 1\n) r ON r.m = m.mese\nORDER BY mese",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+
+    {
+      "id": 8,
+      "type": "table",
+      "title": "Storico Chiamate",
+      "gridPos": { "x": 0, "y": 12, "w": 16, "h": 10 },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": true,
+          "reducer": ["sum"],
+          "fields": ["Durata (min)", "Costo (€)"]
+        }
+      },
+      "fieldConfig": {
+        "defaults": { "custom": { "filterable": true } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Costo (€)" },
+            "properties": [
+              { "id": "unit", "value": "currencyEUR" },
+              { "id": "custom.displayMode", "value": "color-background" },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "dark-green" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Durata (min)" },
+            "properties": [
+              { "id": "custom.displayMode", "value": "color-background" },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "dark-blue" } }
+            ]
+          }
+        ]
+      },
+      "datasource": { "type": "postgres", "uid": "oncall-postgres" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres" },
+          "rawQuery": true,
+          "rawSql": "SELECT\n  TO_CHAR(data_ora, 'DD/MM/YYYY HH24:MI') AS \"Data/Ora\",\n  durata_minuti AS \"Durata (min)\",\n  COALESCE(commessa, '—') AS \"Commessa\",\n  COALESCE(descrizione, '—') AS \"Descrizione\",\n  costo_calcolato AS \"Costo (€)\"\nFROM chiamate\nORDER BY data_ora DESC\nLIMIT 100",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+
+    {
+      "id": 9,
+      "type": "table",
+      "title": "Periodi di Reperibilità",
+      "gridPos": { "x": 16, "y": 12, "w": 8, "h": 10 },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": true,
+          "reducer": ["sum"],
+          "fields": ["Giorni", "Costo (€)"]
+        }
+      },
+      "fieldConfig": {
+        "defaults": { "custom": { "filterable": true } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Costo (€)" },
+            "properties": [
+              { "id": "unit", "value": "currencyEUR" },
+              { "id": "custom.displayMode", "value": "color-background" },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "dark-green" } }
+            ]
+          }
+        ]
+      },
+      "datasource": { "type": "postgres", "uid": "oncall-postgres" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres" },
+          "rawQuery": true,
+          "rawSql": "SELECT\n  TO_CHAR(data_inizio, 'DD/MM/YY') AS \"Dal\",\n  TO_CHAR(data_fine, 'DD/MM/YY') AS \"Al\",\n  (data_fine - data_inizio + 1) AS \"Giorni\",\n  COALESCE(note, '—') AS \"Note\",\n  costo_calcolato AS \"Costo (€)\"\nFROM reperibilita\nORDER BY data_inizio DESC\nLIMIT 50",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Andamento durata chiamate nel tempo",
+      "gridPos": { "x": 0, "y": 22, "w": 24, "h": 7 },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "lineInterpolation": "smooth", "lineWidth": 2, "fillOpacity": 15, "pointSize": 6, "showPoints": "auto" },
+          "color": { "mode": "fixed", "fixedColor": "orange" }
+        },
+        "overrides": []
+      },
+      "datasource": { "type": "postgres", "uid": "oncall-postgres" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres" },
+          "rawQuery": true,
+          "rawSql": "SELECT\n  data_ora AS time,\n  durata_minuti AS \"Durata (min)\"\nFROM chiamate\nWHERE $__timeFilter(data_ora)\nORDER BY time",
+          "format": "time_series",
+          "refId": "A"
+        }
+      ]
+    }
+
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "tags": ["reperibilita", "automazione"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6M", "to": "now" },
+  "timepicker": {},
+  "timezone": "Europe/Rome",
+  "title": "Reperibilità Tracker",
+  "uid": "reperibilita-main-v1",
+  "version": 1
+}

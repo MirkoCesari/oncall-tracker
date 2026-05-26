@@ -1,0 +1,70 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: rep_postgres
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5433:5432"
+    environment:
+      POSTGRES_DB: reperibilita
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d reperibilita"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - rep_net
+
+  webapp:
+    build: ./app
+    container_name: rep_webapp
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/reperibilita
+    volumes:
+      - ./data/app:/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - rep_net
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: rep_grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_POSTGRES_USER: ${POSTGRES_USER}
+      GF_POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_USERS_DEFAULT_THEME: dark
+      GF_SERVER_ROOT_URL: http://localhost:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards/reperibilita.json:/etc/grafana/dashboards/reperibilita.json
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - rep_net
+
+volumes:
+  grafana_data:
+    name: rep_grafana_data
+
+networks:
+  rep_net:
+    name: rep_network

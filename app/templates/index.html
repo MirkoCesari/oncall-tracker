@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}OnCall Tracker{% endblock %}
+{% block content %}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card stat-card text-center py-3">
+            <div class="display-6">{{ stats_chiamate.num_chiamate }}</div>
+            <div class="text-muted small mt-1"><i class="bi bi-telephone me-1"></i>{{ t('stat_calls_month') }}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card text-center py-3">
+            <div class="display-6">{{ "%.0f"|format(stats_chiamate.tot_minuti / 60) }}h {{ stats_chiamate.tot_minuti % 60 }}m</div>
+            <div class="text-muted small mt-1"><i class="bi bi-clock me-1"></i>{{ t('stat_duration') }}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card text-center py-3">
+            <div class="display-6">€{{ "%.2f"|format(stats_chiamate.tot_costo_chiamate) }}</div>
+            <div class="text-muted small mt-1"><i class="bi bi-cash me-1"></i>{{ t('stat_call_cost') }}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card text-center py-3">
+            <div class="display-6">€{{ "%.2f"|format(stats_chiamate.tot_costo_chiamate + stats_rep.tot_costo_rep) }}</div>
+            <div class="text-muted small mt-1"><i class="bi bi-calculator me-1"></i>{{ t('stat_total') }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card mb-3">
+            <div class="card-header"><i class="bi bi-telephone-plus-fill me-2 text-warning"></i>{{ t('new_call') }}</div>
+            <div class="card-body">
+                <form method="POST" action="/chiamata/aggiungi">
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">{{ t('datetime') }}</label>
+                        <input type="datetime-local" name="data_ora" class="form-control" value="{{ now }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">{{ t('duration_min') }}</label>
+                        <input type="number" name="durata_minuti" class="form-control" min="1" placeholder="es. 30" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">{{ t('workorder') }}</label>
+                        <input type="text" name="commessa" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">{{ t('description') }}</label>
+                        <textarea name="descrizione" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="bg-dark rounded p-2 mb-3 small text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        {{ t('formula_call').format(impostazioni.costo_orario, impostazioni.costo_per_chiamata) }}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">{{ t('add_call') }}</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><i class="bi bi-calendar2-plus-fill me-2 text-info"></i>{{ t('new_oncall') }}</div>
+            <div class="card-body">
+                <form method="POST" action="/reperibilita/aggiungi">
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">{{ t('date_start') }}</label>
+                        <input type="date" name="data_inizio" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">{{ t('date_end') }}</label>
+                        <input type="date" name="data_fine" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">{{ t('notes') }}</label>
+                        <textarea name="note" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="bg-dark rounded p-2 mb-3 small text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        {{ t('formula_oncall').format(impostazioni.costo_reperibilita_giornaliero) }}
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary w-100">{{ t('add_oncall') }}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-journal-text me-2"></i>{{ t('history') }}</span>
+                <span class="badge bg-secondary">{{ t('last_records') }}</span>
+            </div>
+            <div class="card-body p-0">
+                <ul class="nav nav-tabs px-3 pt-2" id="storicoTabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#tab-chiamate">
+                            <i class="bi bi-telephone me-1"></i>{{ t('tab_calls') }}
+                            <span class="badge rounded-pill ms-1" style="background:var(--accent)">{{ chiamate|length }}</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#tab-rep">
+                            <i class="bi bi-calendar2-check me-1"></i>{{ t('tab_oncall') }}
+                            <span class="badge rounded-pill ms-1 bg-info text-dark">{{ reperibilita|length }}</span>
+                        </a>
+                    </li>
+                </ul>
+                <div class="tab-content px-3 pb-3 pt-3">
+                    <div class="tab-pane fade show active" id="tab-chiamate">
+                        {% if chiamate %}
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm mb-0">
+                                <thead><tr>
+                                    <th>{{ t('col_datetime') }}</th><th>{{ t('col_duration') }}</th>
+                                    <th>{{ t('col_workorder') }}</th><th>{{ t('col_description') }}</th>
+                                    <th>{{ t('col_cost') }}</th><th></th>
+                                </tr></thead>
+                                <tbody>{% for c in chiamate %}
+                                <tr>
+                                    <td class="small text-nowrap">{{ c.data_ora.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td><span class="badge-dur">{{ c.durata_minuti }}m</span></td>
+                                    <td class="small">{{ c.commessa or '—' }}</td>
+                                    <td class="small text-muted">{{ (c.descrizione or '')[:45] }}{% if c.descrizione and c.descrizione|length > 45 %}…{% endif %}</td>
+                                    <td><span class="badge-cost">€{{ "%.2f"|format(c.costo_calcolato) }}</span></td>
+                                    <td class="text-nowrap">
+                                        <a href="/chiamata/modifica/{{ c.id }}" class="btn btn-sm btn-outline-secondary py-0 px-2"><i class="bi bi-pencil"></i></a>
+                                        <form method="POST" action="/chiamata/elimina/{{ c.id }}" style="display:inline"
+                                              onsubmit="return confirm('{{ t('confirm_delete_call') }}')">
+                                            <button class="btn btn-sm btn-outline-danger py-0 px-2"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>{% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5 text-muted"><i class="bi bi-telephone-x display-4 d-block mb-2"></i>{{ t('no_calls') }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="tab-pane fade" id="tab-rep">
+                        {% if reperibilita %}
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm mb-0">
+                                <thead><tr>
+                                    <th>{{ t('col_from') }}</th><th>{{ t('col_to') }}</th>
+                                    <th>{{ t('col_days') }}</th><th>{{ t('col_notes') }}</th>
+                                    <th>{{ t('col_cost') }}</th><th></th>
+                                </tr></thead>
+                                <tbody>{% for r in reperibilita %}
+                                <tr>
+                                    <td class="small text-nowrap">{{ r.data_inizio.strftime('%d/%m/%Y') }}</td>
+                                    <td class="small text-nowrap">{{ r.data_fine.strftime('%d/%m/%Y') }}</td>
+                                    <td><span class="badge-dur">{{ r.giorni }}g</span></td>
+                                    <td class="small text-muted">{{ (r.note or '')[:40] }}{% if r.note and r.note|length > 40 %}…{% endif %}</td>
+                                    <td><span class="badge-cost">€{{ "%.2f"|format(r.costo_calcolato) }}</span></td>
+                                    <td class="text-nowrap">
+                                        <form method="POST" action="/reperibilita/notifica_fine/{{ r.id }}" style="display:inline">
+                                            <button class="btn btn-sm btn-outline-info py-0 px-2" title="{{ t('btn_notify_end') }}">
+                                                <i class="bi bi-send"></i>
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="/reperibilita/elimina/{{ r.id }}" style="display:inline"
+                                              onsubmit="return confirm('{{ t('confirm_delete_oncall') }}')">
+                                            <button class="btn btn-sm btn-outline-danger py-0 px-2"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>{% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5 text-muted"><i class="bi bi-calendar2-x display-4 d-block mb-2"></i>{{ t('no_oncall') }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% block title %}{{ t('nav_settings') }} — OnCall Tracker{% endblock %}
+{% block content %}
+<div class="row justify-content-center g-4">
+
+  <!-- ── COLONNA SINISTRA: COSTI ── -->
+  <div class="col-md-6 col-lg-5">
+    <div class="card mb-4">
+      <div class="card-header"><i class="bi bi-gear-fill me-2 text-warning"></i>{{ t('settings_title') }}</div>
+      <div class="card-body">
+        <form method="POST" action="/impostazioni">
+          <input type="hidden" name="action" value="costi">
+
+          <!-- Tariffe standard -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold small"><i class="bi bi-clock me-1 text-info"></i>{{ t('hourly_rate') }}</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-dark border-secondary text-muted">€</span>
+              <input type="number" name="costo_orario" class="form-control" step="0.01" min="0" value="{{ impostazioni.costo_orario }}" required>
+            </div>
+            <div class="form-text">{{ t('hourly_rate_hint') }}</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold small"><i class="bi bi-telephone me-1 text-warning"></i>{{ t('per_call_rate') }}</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-dark border-secondary text-muted">€</span>
+              <input type="number" name="costo_per_chiamata" class="form-control" step="0.01" min="0" value="{{ impostazioni.costo_per_chiamata }}" required>
+            </div>
+            <div class="form-text">{{ t('per_call_hint') }}</div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold small"><i class="bi bi-calendar2-check me-1 text-success"></i>{{ t('per_day_rate') }}</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-dark border-secondary text-muted">€</span>
+              <input type="number" name="costo_reperibilita_giornaliero" class="form-control" step="0.01" min="0" value="{{ impostazioni.costo_reperibilita_giornaliero }}" required>
+            </div>
+            <div class="form-text">{{ t('per_day_hint') }}</div>
+          </div>
+
+          <hr class="border-secondary my-3">
+
+          <!-- Tariffe weekend -->
+          <div class="mb-3 fw-semibold text-muted small text-uppercase letter-spacing-1">
+            <i class="bi bi-sun me-1 text-warning"></i>{{ t('weekend_section') }}
+          </div>
+
+          <!-- Weekend InCall -->
+          <div class="mb-3">
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" name="weekend_call_enabled" id="sw_wecall"
+                     {% if impostazioni.weekend_call_enabled %}checked{% endif %}
+                     onchange="toggleSection('wecall_fields', this.checked)">
+              <label class="form-check-label small fw-semibold" for="sw_wecall">
+                <i class="bi bi-telephone me-1 text-warning"></i>{{ t('weekend_call_toggle') }}
+              </label>
+            </div>
+            <div id="wecall_fields" class="ps-3 border-start border-secondary"
+                 style="display:{% if impostazioni.weekend_call_enabled %}block{% else %}none{% endif %}">
+              <div class="mb-2">
+                <label class="form-label small text-muted">{{ t('hourly_rate_we') }}</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-dark border-secondary text-muted">€</span>
+                  <input type="number" name="costo_orario_weekend" class="form-control" step="0.01" min="0" value="{{ impostazioni.costo_orario_weekend }}">
+                </div>
+              </div>
+              <div class="mb-2">
+                <label class="form-label small text-muted">{{ t('per_call_rate_we') }}</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-dark border-secondary text-muted">€</span>
+                  <input type="number" name="costo_per_chiamata_weekend" class="form-control" step="0.01" min="0" value="{{ impostazioni.costo_per_chiamata_weekend }}">
+                </div>
+              </div>
+            </div>
+            <!-- Campi hidden quando disabilitato per non perdere i valori -->
+            <div id="wecall_hidden" style="display:{% if impostazioni.weekend_call_enabled %}none{% else %}block{% endif %}">
+              <input type="hidden" name="costo_orario_weekend" value="{{ impostazioni.costo_orario_weekend }}">
+              <input type="hidden" name="costo_per_chiamata_weekend" value="{{ impostazioni.costo_per_chiamata_weekend }}">
+            </div>
+          </div>
+
+          <!-- Weekend OnCall -->
+          <div class="mb-4">
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" name="weekend_oncall_enabled" id="sw_weoncall"
+                     {% if impostazioni.weekend_oncall_enabled %}checked{% endif %}
+                     onchange="toggleSection('weoncall_fields', this.checked)">
+              <label class="form-check-label small fw-semibold" for="sw_weoncall">
+                <i class="bi bi-calendar2-check me-1 text-success"></i>{{ t('weekend_oncall_toggle') }}
+              </label>
+            </div>
+            <div id="weoncall_fields" class="ps-3 border-start border-secondary"
+                 style="display:{% if impostazioni.weekend_oncall_enabled %}block{% else %}none{% endif %}">
+              <div class="mb-2">
+                <label class="form-label small text-muted">{{ t('per_day_rate_we') }}</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-dark border-secondary text-muted">€</span>
+                  <input type="number" name="costo_reperibilita_weekend" class="form-control" step="0.01" min="0" value="{{ impostazioni.costo_reperibilita_weekend }}">
+                </div>
+              </div>
+            </div>
+            <div id="weoncall_hidden" style="display:{% if impostazioni.weekend_oncall_enabled %}none{% else %}block{% endif %}">
+              <input type="hidden" name="costo_reperibilita_weekend" value="{{ impostazioni.costo_reperibilita_weekend }}">
+            </div>
+            <div class="form-text mt-1">{{ t('weekend_hint') }}</div>
+          </div>
+
+          <hr class="border-secondary my-3">
+
+          <!-- URL Grafana -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold small">
+              <i class="bi bi-bar-chart-fill me-1" style="color:var(--accent)"></i>{{ t('grafana_url_lbl') }}
+            </label>
+            <input type="url" name="grafana_url" class="form-control form-control-sm font-monospace"
+                   placeholder="http://localhost:3000"
+                   value="{{ impostazioni.grafana_url or 'http://localhost:3000' }}">
+            <div class="form-text">{{ t('grafana_url_hint') }}</div>
+          </div>
+
+          <!-- Formula riepilogo -->
+          <div class="card bg-dark mb-4 p-3 small">
+            <div class="fw-semibold mb-2 text-muted">{{ t('formula_title') }}</div>
+            <div class="mb-1"><span class="text-warning">{{ t('formula_call_label') }}</span> = {{ t('formula_call').format(impostazioni.costo_orario, impostazioni.costo_per_chiamata) }}</div>
+            <div><span class="text-success">{{ t('formula_oncall_label') }}</span> = {{ t('formula_oncall').format(impostazioni.costo_reperibilita_giornaliero) }}</div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">{{ t('save_settings') }}</button>
+        </form>
+      </div>
+      <div class="card-footer text-muted small">
+        <i class="bi bi-clock-history me-1"></i>{{ t('last_update') }}: {{ impostazioni.aggiornato_il.strftime('%d/%m/%Y %H:%M') if impostazioni.aggiornato_il else '—' }}
+      </div>
+    </div>
+    <div class="alert alert-info small">
+      <i class="bi bi-info-circle me-2"></i>{{ t('settings_note') }}
+    </div>
+  </div>
+
+  <!-- ── COLONNA DESTRA: TELEGRAM ── -->
+  <div class="col-md-6 col-lg-5">
+    <div class="card">
+      <div class="card-header" style="color:#29abe2">
+        <i class="bi bi-send-fill me-2"></i>{{ t('tg_title') }}
+      </div>
+      <div class="card-body">
+        <div class="card bg-dark mb-4 p-3 small">
+          <div class="fw-semibold mb-2" style="color:#29abe2">📖 {{ t('tg_how_title') }}</div>
+          <ol class="mb-0 ps-3" style="line-height:2">
+            <li>{{ t('tg_how_1')|safe }}</li>
+            <li>{{ t('tg_how_2')|safe }}</li>
+            <li>{{ t('tg_how_3')|safe }}</li>
+            <li>{{ t('tg_how_4') }}</li>
+          </ol>
+        </div>
+        <form method="POST" action="/impostazioni">
+          <input type="hidden" name="action" value="telegram">
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">{{ t('tg_token') }}</label>
+            <input type="text" name="bot_token" class="form-control form-control-sm font-monospace"
+                   placeholder="123456789:ABCDefgh..." value="{{ tg.bot_token if tg else '' }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">{{ t('tg_chat_id') }}</label>
+            <input type="text" name="chat_id" class="form-control form-control-sm font-monospace"
+                   placeholder="-100123456789" value="{{ tg.chat_id if tg else '' }}">
+          </div>
+          <div class="mb-3 d-flex flex-column gap-2">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="abilitato" id="sw_tg"
+                     {% if tg and tg.abilitato %}checked{% endif %}>
+              <label class="form-check-label small" for="sw_tg">{{ t('tg_enabled') }}</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="notifica_inizio" id="sw_tg_start"
+                     {% if tg and tg.notifica_inizio %}checked{% endif %}>
+              <label class="form-check-label small" for="sw_tg_start">{{ t('tg_notify_start') }}</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="notifica_fine" id="sw_tg_end"
+                     {% if tg and tg.notifica_fine %}checked{% endif %}>
+              <label class="form-check-label small" for="sw_tg_end">{{ t('tg_notify_end') }}</label>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 mb-2">{{ t('tg_save') }}</button>
+        </form>
+        <form method="POST" action="/impostazioni">
+          <input type="hidden" name="action" value="telegram_test">
+          <button type="submit" class="btn btn-outline-secondary w-100">{{ t('tg_test') }}</button>
+        </form>
+        <div class="mt-3 p-3 rounded small" style="background:rgba(41,171,226,.08);border:1px solid rgba(41,171,226,.2)">
+          <div class="fw-semibold mb-1" style="color:#29abe2">💬 Preview</div>
+          <div class="text-muted" style="line-height:2">
+            <div>🟢 <b>{% if lang=='en' %}On-call started{% else %}Inizio reperibilità{% endif %}</b> · {% if lang=='en' %}From{% else %}Dal{% endif %} 01/04 {% if lang=='en' %}to{% else %}al{% endif %} 07/04</div>
+            <div>🔴 <b>{% if lang=='en' %}On-call ended{% else %}Fine reperibilità{% endif %}</b> · {% if lang=='en' %}From{% else %}Dal{% endif %} 01/04 {% if lang=='en' %}to{% else %}al{% endif %} 07/04</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleSection(sectionId, show) {
+  document.getElementById(sectionId).style.display = show ? 'block' : 'none';
+  document.getElementById(sectionId.replace('_fields', '_hidden')).style.display = show ? 'none' : 'block';
+}
+</script>
+{% endblock %}
